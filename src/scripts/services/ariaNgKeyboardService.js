@@ -61,7 +61,7 @@
             isNewTaskFromClipboardPressed: function (event) {
                 return isKeyPressed(event, 'KeyD', 68, false); // D
             },
-            isNewTaskAndStartPressed: function (event) {
+            isNewTaskPageFromClipboardPressed: function (event) {
                 return isKeyPressed(event, 'KeyD', 68, true); // Shift+D
             }
         };

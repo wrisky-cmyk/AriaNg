@@ -589,17 +589,17 @@
                 event.preventDefault();
             }
 
-            newTasksFromClipboard(false);
+            newTasksFromClipboard(true);
 
             return false;
         };
 
-        $rootScope.keydownActions.newTaskAndStart = function (event) {
+        $rootScope.keydownActions.newTaskPageFromClipboard = function (event) {
             if (event.preventDefault) {
                 event.preventDefault();
             }
 
-            newTasksFromClipboard(true);
+            newTasksFromClipboard(false);
 
             return false;
         };
