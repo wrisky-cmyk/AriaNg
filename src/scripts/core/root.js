@@ -8,6 +8,18 @@
             return angular.element('input[type="text"],textarea').is(':focus');
         };
 
+        var isAnyFormControlFocus = function () {
+            var activeElement = $document[0].activeElement;
+
+            if (!activeElement) {
+                return false;
+            }
+
+            var tagName = activeElement.tagName ? activeElement.tagName.toLowerCase() : '';
+
+            return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || activeElement.isContentEditable === true;
+        };
+
         var isUrlMatchUrl2 = function (url, url2) {
             if (url === url2) {
                 return true;
@@ -428,6 +440,14 @@
             } else if (ariaNgKeyboardService.isDeletePressed(event) && !isTextboxOrTextareaFocus) {
                 if (angular.isFunction($rootScope.keydownActions.delete)) {
                     return $rootScope.keydownActions.delete(event);
+                }
+            } else if (ariaNgKeyboardService.isPauseResumePressed(event) && !isAnyFormControlFocus()) {
+                if (angular.isFunction($rootScope.keydownActions.pauseResume)) {
+                    return $rootScope.keydownActions.pauseResume(event);
+                }
+            } else if (ariaNgKeyboardService.isNewTaskFromClipboardPressed(event) && !isAnyFormControlFocus()) {
+                if (angular.isFunction($rootScope.keydownActions.newTaskFromClipboard)) {
+                    return $rootScope.keydownActions.newTaskFromClipboard(event);
                 }
             }
         }, true);

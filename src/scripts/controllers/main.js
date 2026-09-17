@@ -442,6 +442,154 @@
             }
         };
 
+        var escapeHtml = function (text) {
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        };
+
+        var cleanUrlToken = function (token) {
+            var cleaned = String(token).replace(/^[<"'\u300c\u300e\uff08(\u3010\u300a,;:\u3001\uff0c]+/, '');
+            var keepBrackets = /[(\uff08\u3010\u300a]/.test(cleaned);
+            var trailing = keepBrackets ? /[>"'\u300d\u300f,;:.\u3001\uff0c]+$/ : /[>"'\u300d\u300f\uff09)\u3011\u300b,;:.\u3001\uff0c]+$/;
+
+            return cleaned.replace(trailing, '');
+        };
+
+        var parseUrlsFromClipboard = function (text) {
+            var urls = [];
+            var lines = String(text || '').split(/\r?\n/);
+
+            for (var i = 0; i < lines.length; i++) {
+                var tokens = lines[i].trim().split(/\s+/);
+
+                for (var j = 0; j < tokens.length; j++) {
+                    var parsedUrls = ariaNgCommonService.parseUrlsFromOriginInput(cleanUrlToken(tokens[j]));
+
+                    for (var k = 0; k < parsedUrls.length; k++) {
+                        if (urls.indexOf(parsedUrls[k]) < 0) {
+                            urls.push(parsedUrls[k]);
+                        }
+                    }
+                }
+            }
+
+            return urls;
+        };
+
+        var pauseOrResumeAllTasks = function () {
+            aria2SettingService.getGlobalStat(function (response) {
+                if (!response.success) {
+                    return;
+                }
+
+                var isPaused = parseInt(response.data.numActive, 10) > 0;
+
+                if (isPaused) {
+                    aria2TaskService.pauseAllTasks(null, true);
+                } else {
+                    aria2TaskService.unpauseAllTasks(null, true);
+                }
+
+                // keep the same behaviour as the pause / start button in the task list toolbar
+                if (isPaused && $location.path() === '/downloading') {
+                    $location.path('/waiting');
+                } else if (!isPaused && $location.path() === '/waiting') {
+                    $location.path('/downloading');
+                }
+            }, true);
+        };
+
+        var createTasksFromUrls = function (urls) {
+            var tasks = [];
+
+            for (var i = 0; i < urls.length; i++) {
+                tasks.push({urls: [urls[i]], options: {}});
+            }
+
+            $rootScope.loadPromise = aria2TaskService.newUriTasks(tasks, false, function (response) {
+                var content = urls.map(escapeHtml).join('<br/>');
+
+                if (response.hasSuccess) {
+                    ariaNgNotificationService.notifyInPage('New Download Task Created', content, {
+                        type: response.hasError ? 'warning' : 'success'
+                    });
+                } else {
+                    ariaNgNotificationService.notifyInPage('Failed to Create New Download Task', content, {
+                        type: 'error'
+                    });
+                }
+            });
+        };
+
+        var newTasksFromClipboard = function () {
+            var clipboard = ($window.navigator ? $window.navigator.clipboard : null);
+            var cannotReadClipboard = function () {
+                ariaNgNotificationService.notifyInPage('Cannot Read Clipboard', 'Please allow this site to read the clipboard, or open the "New" page and paste the link manually.', {
+                    type: 'warning'
+                });
+
+                $location.path('/new');
+            };
+
+            if (!clipboard || !angular.isFunction(clipboard.readText)) {
+                cannotReadClipboard();
+                return;
+            }
+
+            clipboard.readText().then(function (text) {
+                var urls = parseUrlsFromClipboard(text);
+
+                if (urls.length < 1) {
+                    ariaNgNotificationService.notifyInPage('No Link Found in Clipboard', 'Only http / https / ftp / sftp / magnet links are supported.', {
+                        type: 'warning'
+                    });
+                    return;
+                }
+
+                createTasksFromUrls(urls);
+            }, function () {
+                cannotReadClipboard();
+            });
+        };
+
+        $rootScope.keydownActions.pauseResume = function (event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+
+            var tasks = $rootScope.taskContext.getSelectedTasks();
+            var shouldPause = false;
+
+            for (var i = 0; tasks && i < tasks.length; i++) {
+                if (tasks[i].status === 'active' || tasks[i].status === 'waiting') {
+                    shouldPause = true;
+                    break;
+                }
+            }
+
+            if (tasks && tasks.length > 0) {
+                $scope.changeTasksState(shouldPause ? 'pause' : 'start');
+            } else {
+                pauseOrResumeAllTasks();
+            }
+
+            return false;
+        };
+
+        $rootScope.keydownActions.newTaskFromClipboard = function (event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+
+            newTasksFromClipboard();
+
+            return false;
+        };
+
         if (ariaNgSettingService.getTitleRefreshInterval() > 0) {
             pageTitleRefreshPromise = $interval(function () {
                 refreshPageTitle();
