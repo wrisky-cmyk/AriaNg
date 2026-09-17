@@ -525,7 +525,7 @@
             });
         };
 
-        var newTasksFromClipboard = function () {
+        var newTasksFromClipboard = function (startImmediately) {
             var clipboard = ($window.navigator ? $window.navigator.clipboard : null);
             var cannotReadClipboard = function () {
                 ariaNgNotificationService.notifyInPage('Cannot Read Clipboard', 'Please allow this site to read the clipboard, or open the "New" page and paste the link manually.', {
@@ -550,7 +550,11 @@
                     return;
                 }
 
-                createTasksFromUrls(urls);
+                if (startImmediately) {
+                    createTasksFromUrls(urls);
+                } else {
+                    $location.path('/new').search({url: ariaNgCommonService.base64UrlEncode(urls.join('\n'))});
+                }
             }, function () {
                 cannotReadClipboard();
             });
@@ -585,7 +589,17 @@
                 event.preventDefault();
             }
 
-            newTasksFromClipboard();
+            newTasksFromClipboard(false);
+
+            return false;
+        };
+
+        $rootScope.keydownActions.newTaskAndStart = function (event) {
+            if (event.preventDefault) {
+                event.preventDefault();
+            }
+
+            newTasksFromClipboard(true);
 
             return false;
         };

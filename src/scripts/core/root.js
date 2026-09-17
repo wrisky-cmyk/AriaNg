@@ -449,6 +449,10 @@
                 if (angular.isFunction($rootScope.keydownActions.newTaskFromClipboard)) {
                     return $rootScope.keydownActions.newTaskFromClipboard(event);
                 }
+            } else if (ariaNgKeyboardService.isNewTaskAndStartPressed(event) && !isAnyFormControlFocus()) {
+                if (angular.isFunction($rootScope.keydownActions.newTaskAndStart)) {
+                    return $rootScope.keydownActions.newTaskAndStart(event);
+                }
             }
         }, true);
 

@@ -24,12 +24,12 @@
             return event.keyCode || event.which || event.charCode;
         };
 
-        var isPlainKeyPressed = function (event, code, keyCode) {
+        var isKeyPressed = function (event, code, keyCode, shiftKey) {
             if (event.isComposing || getKeyCode(event) === 229) { // input method is composing
                 return false;
             }
 
-            if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+            if (event.ctrlKey || event.metaKey || event.altKey || !!event.shiftKey !== !!shiftKey) {
                 return false;
             }
 
@@ -56,10 +56,13 @@
                 return (event.code === 'Delete' || getKeyCode(event) === 46); // Delete
             },
             isPauseResumePressed: function (event) {
-                return isPlainKeyPressed(event, 'KeyP', 80); // P
+                return isKeyPressed(event, 'KeyP', 80, false); // P
             },
             isNewTaskFromClipboardPressed: function (event) {
-                return isPlainKeyPressed(event, 'KeyD', 68); // D
+                return isKeyPressed(event, 'KeyD', 68, false); // D
+            },
+            isNewTaskAndStartPressed: function (event) {
+                return isKeyPressed(event, 'KeyD', 68, true); // Shift+D
             }
         };
     }]);
