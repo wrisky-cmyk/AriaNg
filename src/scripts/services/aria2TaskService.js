@@ -872,6 +872,18 @@
                     callback: callback
                 });
             },
+            pauseAllTasks: function (callback, silent) {
+                return aria2RpcService.pauseAll({
+                    silent: !!silent,
+                    callback: callback
+                });
+            },
+            unpauseAllTasks: function (callback, silent) {
+                return aria2RpcService.unpauseAll({
+                    silent: !!silent,
+                    callback: callback
+                });
+            },
             onConnectionSuccess: function (callback) {
                 if (!callback) {
                     ariaNgLogService.warn('[aria2TaskService.onConnectionSuccess] callback is null');

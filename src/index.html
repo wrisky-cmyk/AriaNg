@@ -79,12 +79,12 @@
                     </li>
                     <li class="divider"></li>
                     <li class="disabled" ng-class="{'disabled': !isSpecifiedTaskSelected('paused')}">
-                        <a class="toolbar" title="{{'Start' | translate}}" ng-click="changeTasksState('start')">
+                        <a class="toolbar" title="{{'Start' | translate}} (P)" ng-click="changeTasksState('start')">
                             <i class="fa fa-play"></i>
                         </a>
                     </li>
                     <li class="disabled" ng-class="{'disabled': !isSpecifiedTaskSelected('active', 'waiting')}">
-                        <a class="toolbar" title="{{'Pause' | translate}}" ng-click="changeTasksState('pause')">
+                        <a class="toolbar" title="{{'Pause' | translate}} (P)" ng-click="changeTasksState('pause')">
                             <i class="fa fa-pause"></i>
                         </a>
                     </li>

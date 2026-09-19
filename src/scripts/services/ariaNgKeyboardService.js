@@ -24,6 +24,18 @@
             return event.keyCode || event.which || event.charCode;
         };
 
+        var isKeyPressed = function (event, code, keyCode, shiftKey) {
+            if (event.isComposing || getKeyCode(event) === 229) { // input method is composing
+                return false;
+            }
+
+            if (event.ctrlKey || event.metaKey || event.altKey || !!event.shiftKey !== !!shiftKey) {
+                return false;
+            }
+
+            return event.code === code || getKeyCode(event) === keyCode;
+        };
+
         return {
             isMacKeyboardLike: function () {
                 return isMacLike;
@@ -42,6 +54,15 @@
             },
             isDeletePressed: function (event) {
                 return (event.code === 'Delete' || getKeyCode(event) === 46); // Delete
+            },
+            isPauseResumePressed: function (event) {
+                return isKeyPressed(event, 'KeyP', 80, false); // P
+            },
+            isNewTaskFromClipboardPressed: function (event) {
+                return isKeyPressed(event, 'KeyD', 68, false); // D
+            },
+            isNewTaskPageFromClipboardPressed: function (event) {
+                return isKeyPressed(event, 'KeyD', 68, true); // Shift+D
             }
         };
     }]);
